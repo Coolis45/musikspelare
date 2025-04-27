@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Väldigt Enkel Musikspelare</title>
+    <title>Simple Music Player</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -50,58 +50,25 @@
         .custom-file-label:hover {
             background: #005bb5;
         }
-        .playlist {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            padding: 10px 12px 8px 12px;
-            margin-bottom: 18px;
-        }
-        .playlist-list {
+        ul#musicList {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        .playlist-list li {
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #007aff;
-        }
-        .playlist-list li:last-child {
-            border-bottom: none;
-        }
-        .playlist-list li.active {
-            font-weight: bold;
-            color: #222;
-        }
-        .player-controls {
+        ul#musicList li {
+            background: #fff;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 10px 12px 8px 12px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: flex-start;
         }
-        .player-controls button {
-            background: #007aff;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .player-controls button:hover {
-            background: #005bb5;
-        }
-        .current-song {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 1.05rem;
-            min-height: 1.2em;
+        ul#musicList li span {
+            font-size: 1rem;
+            margin-bottom: 4px;
+            word-break: break-all;
         }
         audio {
             width: 100%;
@@ -129,130 +96,55 @@
 </head>
 <body>
     <div class="container">
-        <h1>Väldigt Enkel Musikspelare</h1>
+        <h1>Simple Music Player</h1>
         <div class="desc">
-            Välj en eller flera musikfiler <b>eller en hel mapp</b> för att skapa en spellista.<br>
-            <span style="font-size:0.97em;">(Filerna laddas <b>inte</b> upp till internet!)</span>
+            Select one or more music files <b>or a whole folder</b> to play them directly in your browser.<br>
+            <span style="font-size:0.97em;">(Files are <b>not</b> uploaded to the internet!)</span>
         </div>
         <div class="file-btn">
-            <label class="custom-file-label" for="fileInput">Välj filer eller mapp</label>
+            <label class="custom-file-label" for="fileInput">Choose Files or Folder</label>
             <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory directory>
         </div>
         <div class="note" id="note"></div>
-        <div class="playlist" id="playlistSection" style="display:none;">
-            <div class="current-song" id="currentSong"></div>
-            <div class="player-controls">
-                <button id="prevBtn" title="Föregående låt">⏮️</button>
-                <button id="playPauseBtn" title="Spela/Pausa">▶️</button>
-                <button id="nextBtn" title="Nästa låt">⏭️</button>
-            </div>
-            <audio id="audioPlayer" controls style="width:100%;"></audio>
-            <ul class="playlist-list" id="playlist"></ul>
-        </div>
+        <ul id="musicList"></ul>
     </div>
     <script>
+    // Feature detection for folder selection
     window.onload = function() {
         const fileInput = document.getElementById('fileInput');
         const note = document.getElementById('note');
         if (!('webkitdirectory' in fileInput) && !('directory' in fileInput)) {
-            note.textContent = 'Mappval stöds inte i denna webbläsare. Prova Chrome, Edge eller Safari på dator.';
+            note.textContent = 'Folder selection is not supported in this browser. Try Chrome, Edge, or Safari on desktop.';
         } else {
             note.textContent = '';
         }
     };
 
     const fileInput = document.getElementById('fileInput');
+    const musicList = document.getElementById('musicList');
     const label = document.querySelector('.custom-file-label');
-    const playlistSection = document.getElementById('playlistSection');
-    const playlistList = document.getElementById('playlist');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const currentSong = document.getElementById('currentSong');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
-    let playlist = [];
-    let currentIndex = 0;
-    let isPlaying = false;
 
     label.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function() {
-        playlist = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/'));
-        if (playlist.length === 0) {
-            playlistSection.style.display = 'none';
+        musicList.innerHTML = '';
+        const files = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/'));
+        if (files.length === 0) {
+            musicList.innerHTML = '<li style="text-align:center;color:#888;">No audio files found.</li>';
             return;
         }
-        currentIndex = 0;
-        renderPlaylist();
-        loadSong(currentIndex);
-        playlistSection.style.display = '';
-    });
-
-    function renderPlaylist() {
-        playlistList.innerHTML = '';
-        playlist.forEach((file, idx) => {
+        files.forEach(file => {
             const li = document.createElement('li');
-            li.textContent = file.webkitRelativePath || file.name;
-            li.className = idx === currentIndex ? 'active' : '';
-            li.onclick = () => {
-                currentIndex = idx;
-                loadSong(currentIndex);
-                playSong();
-            };
-            playlistList.appendChild(li);
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = file.webkitRelativePath || file.name;
+            li.appendChild(nameSpan);
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = URL.createObjectURL(file);
+            li.appendChild(audio);
+            musicList.appendChild(li);
         });
-    }
-
-    function loadSong(idx) {
-        const file = playlist[idx];
-        if (!file) return;
-        audioPlayer.src = URL.createObjectURL(file);
-        currentSong.textContent = file.webkitRelativePath || file.name;
-        renderPlaylist();
-    }
-
-    function playSong() {
-        audioPlayer.play();
-        isPlaying = true;
-        playPauseBtn.textContent = '⏸️';
-    }
-
-    function pauseSong() {
-        audioPlayer.pause();
-        isPlaying = false;
-        playPauseBtn.textContent = '▶️';
-    }
-
-    playPauseBtn.onclick = function() {
-        if (!playlist.length) return;
-        if (isPlaying) {
-            pauseSong();
-        } else {
-            playSong();
-        }
-    };
-
-    prevBtn.onclick = function() {
-        if (!playlist.length) return;
-        currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-        loadSong(currentIndex);
-        playSong();
-    };
-
-    nextBtn.onclick = function() {
-        if (!playlist.length) return;
-        currentIndex = (currentIndex + 1) % playlist.length;
-        loadSong(currentIndex);
-        playSong();
-    };
-
-    audioPlayer.onended = function() {
-        if (!playlist.length) return;
-        currentIndex = (currentIndex + 1) % playlist.length;
-        loadSong(currentIndex);
-        playSong();
-    };
+    });
     </script>
 </body>
 </html> 
