@@ -102,8 +102,8 @@
             <span style="font-size:0.97em;">(Files are <b>not</b> uploaded to the internet!)</span>
         </div>
         <div class="file-btn">
-            <label class="custom-file-label" for="fileInput">Choose Files</label>
-            <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a" multiple>
+            <label class="custom-file-label" for="fileInput">Välj musikfiler eller mapp</label>
+            <input type="file" id="fileInput" accept=".mp3,.wav,.ogg,.m4a,.flac,audio/*" multiple>
         </div>
         <div class="file-btn">
             <label class="custom-file-label" for="folderInput">Choose Folder</label>
@@ -127,59 +127,44 @@
     const fileInput = document.getElementById('fileInput');
     const folderInput = document.getElementById('folderInput');
     const musicList = document.getElementById('musicList');
-    const fileLabel = document.querySelector('.custom-file-label[for="fileInput"]');
-    const folderLabel = document.querySelector('.custom-file-label[for="folderInput"]');
+    const label = document.querySelector('.custom-file-label');
 
-    fileLabel.addEventListener('click', () => fileInput.click());
-    folderLabel.addEventListener('click', () => folderInput.click());
+    label.addEventListener('click', () => fileInput.click());
 
-    function processFiles(files) {
+    fileInput.addEventListener('change', function() {
         musicList.innerHTML = '';
-        console.log('Processing files:', files);
+        const files = Array.from(this.files);
         
-        const audioFiles = Array.from(files).filter(f => {
-            const isAudioType = f.type.startsWith('audio/');
-            const hasAudioExtension = /\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name);
-            console.log('File:', f.name, 'Type:', f.type, 'IsAudio:', isAudioType || hasAudioExtension);
-            return isAudioType || hasAudioExtension;
-        });
-        
-        console.log('Total files:', files.length, 'Audio files found:', audioFiles.length);
-        
-        if (audioFiles.length === 0) {
-            musicList.innerHTML = '<li style="text-align:center;color:#888;">No audio files found in the selected location.</li>';
+        if (files.length === 0) {
+            musicList.innerHTML = '<li style="text-align:center;color:#888;">Inga filer valda</li>';
             return;
         }
-        
-        audioFiles.forEach(file => {
-            const li = document.createElement('li');
-            const nameSpan = document.createElement('span');
-            // För mappar, visa hela sökvägen
-            nameSpan.textContent = file.webkitRelativePath || file.name;
-            li.appendChild(nameSpan);
-            
-            const audio = document.createElement('audio');
-            audio.controls = true;
-            audio.preload = 'metadata';
-            const objectUrl = URL.createObjectURL(file);
-            audio.src = objectUrl;
-            
-            // Rensa object URL när ljudet laddats
-            audio.onload = () => URL.revokeObjectURL(objectUrl);
-            
-            li.appendChild(audio);
-            musicList.appendChild(li);
-        });
-    }
 
-    fileInput.addEventListener('change', function(e) {
-        console.log('File input change:', this.files.length, 'files selected');
-        processFiles(this.files);
-    });
-    
-    folderInput.addEventListener('change', function(e) {
-        console.log('Folder input change:', this.files.length, 'files found in folder');
-        processFiles(this.files);
+        files.forEach(file => {
+            if (file.type.startsWith('audio/') || 
+                file.name.toLowerCase().endsWith('.mp3') || 
+                file.name.toLowerCase().endsWith('.wav') || 
+                file.name.toLowerCase().endsWith('.ogg') || 
+                file.name.toLowerCase().endsWith('.m4a') || 
+                file.name.toLowerCase().endsWith('.flac')) {
+                
+                const li = document.createElement('li');
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = file.name;
+                li.appendChild(nameSpan);
+                
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = URL.createObjectURL(file);
+                li.appendChild(audio);
+                
+                musicList.appendChild(li);
+            }
+        });
+
+        if (musicList.children.length === 0) {
+            musicList.innerHTML = '<li style="text-align:center;color:#888;">Inga musikfiler hittades</li>';
+        }
     });
     </script>
 </body>
