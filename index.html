@@ -113,6 +113,12 @@
             text-align: center;
             margin-bottom: 10px;
         }
+        .tip {
+            color: #555;
+            font-size: 0.98rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
         @media (max-width: 600px) {
             .container {
                 padding: 10px 2px 32px 2px;
@@ -133,6 +139,10 @@
         <div class="desc">
             Välj en eller flera musikfiler <b>eller en hel mapp</b> för att skapa en spellista.<br>
             <span style="font-size:0.97em;">(Filerna laddas <b>inte</b> upp till internet!)</span>
+        </div>
+        <div class="tip">
+            <b>Tips för iPhone:</b> Tryck på "Bläddra" och välj flera låtar genom att trycka "Markera" uppe till höger och välj sedan dina låtar.<br>
+            (Det går tyvärr inte att välja en hel mapp på iPhone, men du kan välja flera filer samtidigt.)
         </div>
         <div class="file-btn">
             <label class="custom-file-label" for="fileInput">Välj filer eller mapp</label>
@@ -180,6 +190,8 @@
 
     fileInput.addEventListener('change', function() {
         songs = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/'));
+        // Sortera låtar efter namn (case-insensitive)
+        songs.sort((a, b) => (a.name || a.webkitRelativePath).toLowerCase().localeCompare((b.name || b.webkitRelativePath).toLowerCase()));
         if (songs.length === 0) {
             playlistSection.style.display = 'none';
             return;
