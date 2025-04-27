@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Väldigt Enkel Musikspelare</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        h1 { margin-bottom: 20px; }
+        #fileInput { margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+        audio { width: 100%; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Väldigt Enkel Musikspelare</h1>
+    <p>Välj en eller flera musikfiler från din enhet för att spela upp dem direkt i webbläsaren. (Filerna laddas <b>inte</b> upp till internet!)</p>
+    <input type="file" id="fileInput" accept="audio/*" multiple>
+    <ul id="musicList"></ul>
+
+    <script>
+    const fileInput = document.getElementById('fileInput');
+    const musicList = document.getElementById('musicList');
+
+    fileInput.addEventListener('change', function() {
+        musicList.innerHTML = '';
+        const files = Array.from(fileInput.files);
+        files.forEach(file => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = URL.createObjectURL(file);
+            li.appendChild(audio);
+            musicList.appendChild(li);
+        });
+    });
+    </script>
+</body>
+</html> 
