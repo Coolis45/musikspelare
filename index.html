@@ -1,33 +1,143 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Väldigt Enkel Musikspelare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Music Player</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; }
-        h1 { margin-bottom: 20px; }
-        #fileInput { margin-bottom: 20px; }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 10px; }
-        audio { width: 100%; margin-top: 5px; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f6f8fa;
+            color: #222;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 24px 8px 48px 8px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+        .desc {
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+        }
+        .file-btn {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        #fileInput {
+            display: none;
+        }
+        .custom-file-label {
+            background: #007aff;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            outline: none;
+        }
+        .custom-file-label:hover {
+            background: #005bb5;
+        }
+        ul#musicList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul#musicList li {
+            background: #fff;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 10px 12px 8px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        ul#musicList li span {
+            font-size: 1rem;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+        audio {
+            width: 100%;
+            outline: none;
+        }
+        .note {
+            color: #b00;
+            font-size: 0.98rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px 2px 32px 2px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            .custom-file-label {
+                padding: 10px 12px;
+                font-size: 0.98rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Väldigt Enkel Musikspelare</h1>
-    <p>Välj en eller flera musikfiler <b>eller en hel mapp</b> från din enhet för att spela upp dem direkt i webbläsaren. (Filerna laddas <b>inte</b> upp till internet!)</p>
-    <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory directory>
-    <ul id="musicList"></ul>
-
+    <div class="container">
+        <h1>Simple Music Player</h1>
+        <div class="desc">
+            Select one or more music files <b>or a whole folder</b> to play them directly in your browser.<br>
+            <span style="font-size:0.97em;">(Files are <b>not</b> uploaded to the internet!)</span>
+        </div>
+        <div class="file-btn">
+            <label class="custom-file-label" for="fileInput">Choose Files or Folder</label>
+            <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory directory>
+        </div>
+        <div class="note" id="note"></div>
+        <ul id="musicList"></ul>
+    </div>
     <script>
+    // Feature detection for folder selection
+    window.onload = function() {
+        const fileInput = document.getElementById('fileInput');
+        const note = document.getElementById('note');
+        if (!('webkitdirectory' in fileInput) && !('directory' in fileInput)) {
+            note.textContent = 'Folder selection is not supported in this browser. Try Chrome, Edge, or Safari on desktop.';
+        } else {
+            note.textContent = '';
+        }
+    };
+
     const fileInput = document.getElementById('fileInput');
     const musicList = document.getElementById('musicList');
+    const label = document.querySelector('.custom-file-label');
+
+    label.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function() {
         musicList.innerHTML = '';
-        const files = Array.from(fileInput.files);
+        const files = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/'));
+        if (files.length === 0) {
+            musicList.innerHTML = '<li style="text-align:center;color:#888;">No audio files found.</li>';
+            return;
+        }
         files.forEach(file => {
             const li = document.createElement('li');
-            li.textContent = file.webkitRelativePath || file.name;
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = file.webkitRelativePath || file.name;
+            li.appendChild(nameSpan);
             const audio = document.createElement('audio');
             audio.controls = true;
             audio.src = URL.createObjectURL(file);
