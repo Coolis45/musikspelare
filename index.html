@@ -103,7 +103,11 @@
         </div>
         <div class="file-btn">
             <label class="custom-file-label" for="fileInput">Choose Files or Folder</label>
-            <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory>
+            <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a" multiple>
+        </div>
+        <div class="file-btn">
+            <label class="custom-file-label" for="folderInput">Choose Folder</label>
+            <input type="file" id="folderInput" webkitdirectory directory multiple>
         </div>
         <div class="note" id="note"></div>
         <ul id="musicList"></ul>
@@ -111,9 +115,9 @@
     <script>
     // Feature detection for folder selection
     window.onload = function() {
-        const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
         const note = document.getElementById('note');
-        if (!('webkitdirectory' in fileInput) && !('directory' in fileInput)) {
+        if (!('webkitdirectory' in folderInput)) {
             note.textContent = 'Folder selection is not supported in this browser. Try Chrome, Edge, or Safari on desktop.';
         } else {
             note.textContent = '';
@@ -121,19 +125,29 @@
     };
 
     const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
     const musicList = document.getElementById('musicList');
-    const label = document.querySelector('.custom-file-label');
+    const fileLabel = document.querySelector('.custom-file-label[for="fileInput"]');
+    const folderLabel = document.querySelector('.custom-file-label[for="folderInput"]');
 
-    label.addEventListener('click', () => fileInput.click());
+    fileLabel.addEventListener('click', () => fileInput.click());
+    folderLabel.addEventListener('click', () => folderInput.click());
 
-    fileInput.addEventListener('change', function() {
+    function processFiles(files) {
         musicList.innerHTML = '';
-        const files = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/') || f.name.match(/\.(mp3|wav|ogg|m4a|flac)$/i));
-        if (files.length === 0) {
+        const audioFiles = Array.from(files).filter(f => 
+            f.type.startsWith('audio/') || 
+            /\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)
+        );
+        
+        console.log('Total files:', files.length, 'Audio files:', audioFiles.length);
+        
+        if (audioFiles.length === 0) {
             musicList.innerHTML = '<li style="text-align:center;color:#888;">No audio files found.</li>';
             return;
         }
-        files.forEach(file => {
+        
+        audioFiles.forEach(file => {
             const li = document.createElement('li');
             const nameSpan = document.createElement('span');
             nameSpan.textContent = file.webkitRelativePath || file.name;
@@ -144,6 +158,14 @@
             li.appendChild(audio);
             musicList.appendChild(li);
         });
+    }
+
+    fileInput.addEventListener('change', function() {
+        processFiles(this.files);
+    });
+    
+    folderInput.addEventListener('change', function() {
+        processFiles(this.files);
     });
     </script>
 </body>
