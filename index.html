@@ -186,10 +186,16 @@
     let currentIndex = 0;
     let isPlaying = false;
 
+    function isAudioFile(file) {
+        const audioExtensions = ['.mp3', '.wav', '.ogg'];
+        const name = (file.name || file.webkitRelativePath || '').toLowerCase();
+        return (file.type && file.type.startsWith('audio/')) || audioExtensions.some(ext => name.endsWith(ext));
+    }
+
     label.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function() {
-        songs = Array.from(fileInput.files).filter(f => f.type.startsWith('audio/'));
+        songs = Array.from(fileInput.files).filter(isAudioFile);
         // Sortera låtar efter namn (case-insensitive)
         songs.sort((a, b) => (a.name || a.webkitRelativePath).toLowerCase().localeCompare((b.name || b.webkitRelativePath).toLowerCase()));
         if (songs.length === 0) {
