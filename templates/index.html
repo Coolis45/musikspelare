@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Väldigt Enkel Musikspelare</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .music-list, .playlist-list { margin-top: 20px; }
+        audio { width: 100%; margin-top: 10px; }
+        .playlist-section { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Väldigt Enkel Musikspelare</h1>
+
+    <form method="get" action="/">
+        <input type="text" name="q" placeholder="Sök låt..." value="{{ request.args.get('q', '') }}">
+        <button type="submit">Sök</button>
+    </form>
+
+    <form method="post" action="/upload" enctype="multipart/form-data" style="margin-top: 20px;">
+        <input type="file" name="file" accept="audio/*" required>
+        <button type="submit">Ladda upp låt</button>
+    </form>
+
+    <div class="music-list">
+        <h2>Låtar</h2>
+        <ul>
+            {% for file in files %}
+            <li>
+                {{ file }}
+                <audio controls>
+                    <source src="/music/{{ file }}" type="audio/mpeg">
+                    Din webbläsare stödjer inte ljuduppspelning.
+                </audio>
+                <form method="post" action="/add_to_playlist" style="display:inline;">
+                    <select name="playlist">
+                        {% for pl in playlists %}
+                        <option value="{{ pl }}">{{ pl }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="song" value="{{ file }}">
+                    <button type="submit">Lägg till i spellista</button>
+                </form>
+            </li>
+            {% else %}
+            <li>Inga låtar uppladdade än.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="playlist-section">
+        <h2>Spellistor</h2>
+        <form method="post" action="/add_playlist">
+            <input type="text" name="playlist_name" placeholder="Namn på spellista" required>
+            <button type="submit">Skapa spellista</button>
+        </form>
+        <div class="playlist-list">
+            {% for name, songs in playlists.items() %}
+            <h3>{{ name }}</h3>
+            <ul>
+                {% for song in songs %}
+                <li>
+                    {{ song }}
+                    <audio controls>
+                        <source src="/music/{{ song }}" type="audio/mpeg">
+                    </audio>
+                </li>
+                {% else %}
+                <li>Inga låtar i denna spellista.</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>Inga spellistor skapade än.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html> 
