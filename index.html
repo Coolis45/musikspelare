@@ -14,8 +14,8 @@
 </head>
 <body>
     <h1>Väldigt Enkel Musikspelare</h1>
-    <p>Välj en eller flera musikfiler från din enhet för att spela upp dem direkt i webbläsaren. (Filerna laddas <b>inte</b> upp till internet!)</p>
-    <input type="file" id="fileInput" accept="audio/*" multiple>
+    <p>Välj en eller flera musikfiler <b>eller en hel mapp</b> från din enhet för att spela upp dem direkt i webbläsaren. (Filerna laddas <b>inte</b> upp till internet!)</p>
+    <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory directory>
     <ul id="musicList"></ul>
 
     <script>
@@ -27,7 +27,7 @@
         const files = Array.from(fileInput.files);
         files.forEach(file => {
             const li = document.createElement('li');
-            li.textContent = file.name;
+            li.textContent = file.webkitRelativePath || file.name;
             const audio = document.createElement('audio');
             audio.controls = true;
             audio.src = URL.createObjectURL(file);
